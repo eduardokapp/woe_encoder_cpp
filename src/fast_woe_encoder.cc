@@ -11,21 +11,25 @@ namespace fast_woe_encoder {
 namespace {
 
 // Helper function for verbose logging.
-void VLog(int verbose, const std::string &message) {
+void VLog(int verbose, std::string_view message) {
   if (verbose > 0) {
     std::cout << message << std::endl;
   }
 }
 
+} // namespace
+
+using std::count;
+
 // Helper function to calculate category counts (now separated).
 std::vector<std::pair<int64_t, int64_t>>
-CalculateCategoryCounts(const std::vector<int> &column,
-                        const std::vector<bool> &targets, int &max_category) {
+WoEEncoder::CalculateCategoryCounts(const std::vector<int> &column,
+                                    const std::vector<bool> &targets) {
 
-  max_category = 0;
-  for (int cat : column) {
-    max_category = std::max(max_category, cat);
-  }
+  // Find the max category. This will be the size of the counts array.
+  // Note that we assume that categories are always consecutive integers.
+  int max_category = *std::max_element(column.begin(), column.end());
+  // Assume that categories may start from 0 or 1.
   std::vector<std::pair<int64_t, int64_t>> counts(max_category + 1, {0, 0});
 
   for (size_t i = 0; i < column.size(); ++i) {
@@ -35,25 +39,18 @@ CalculateCategoryCounts(const std::vector<int> &column,
       counts[cat].second += 1 - static_cast<int64_t>(targets[i]);
     } else {
       // Handle out-of-bounds category (log or throw an error).
-      VLog(0, "Category out of range: " +
-                  std::to_string(
-                      cat)); // Use 0 or options_.verbose if available here
+      VLog(options_.verbose, "Category out of range: " + std::to_string(cat));
     }
   }
   return counts;
 }
 
-} // namespace
-
-using std::count;
-
 void WoEEncoder::PopulateWoEMap(size_t column_index,
                                 const std::vector<int> &column,
                                 const std::vector<bool> &targets) {
 
-  int max_category = 0;
   std::vector<std::pair<int64_t, int64_t>> counts =
-      CalculateCategoryCounts(column, targets, max_category);
+      CalculateCategoryCounts(column, targets);
 
   std::vector<double> woe_values(counts.size(), options_.default_woe);
 
@@ -75,6 +72,15 @@ void WoEEncoder::PopulateWoEMap(size_t column_index,
 
 void WoEEncoder::Fit(const std::vector<std::vector<int>> &features,
                      const std::vector<bool> &targets) {
+  // Sanity check:
+  if (features.size() != targets.size()) {
+    throw std::invalid_argument(
+        "Features and targets must have the same number of elements");
+  }
+  if (features.empty()) {
+    throw std::invalid_argument("Features and targets must not be empty");
+  }
+
   // Get total counts of positives and negatives.
   total_pos_ =
       static_cast<int64_t>(count(targets.begin(), targets.end(), true));
@@ -100,11 +106,14 @@ void WoEEncoder::Fit(const std::vector<std::vector<int>> &features,
 
 std::vector<std::vector<double>>
 WoEEncoder::Transform(const std::vector<std::vector<int>> &features) const {
+  if (!fitted_) {
+    throw std::runtime_error("Can't transform if not yet fitted.");
+  }
   std::vector<std::vector<double>> transformed_features(features.size());
 
   for (size_t i = 0; i < features.size(); ++i) {
-    // Check if the column exists (important for robustness).
-    if (i < woe_map_.size()) { // Check if the column exists
+    // Check if the column exists.
+    if (i < woe_map_.size()) {
       const std::vector<double> &woe_values = woe_map_[i];
 
       transformed_features[i].reserve(features[i].size());
@@ -121,8 +130,7 @@ WoEEncoder::Transform(const std::vector<std::vector<int>> &features) const {
            "Column not found in training data: " + std::to_string(i));
       // Handle missing column appropriately (e.g., fill with default woe or
       // throw an error).
-      transformed_features[i].resize(
-          features[i].size(), options_.default_woe); // Fill with default value
+      transformed_features[i].resize(features[i].size(), options_.default_woe);
     }
   }
   return transformed_features;

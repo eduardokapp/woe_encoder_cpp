@@ -28,7 +28,7 @@ public:
   explicit WoEEncoder(WoEEncoderOptions options = {}) : options_(options){};
 
   // Given a matrix of integers, populates a map of WOE values.
-  // The matrix should be represented columnwise.
+  // The matrix should be represented in column-major order.
   // Only supports boolean targets.
   void Fit(const std::vector<std::vector<int>> &features,
            const std::vector<bool> &targets);
@@ -41,13 +41,19 @@ private:
   // Populate WoEMap for a given column.
   void PopulateWoEMap(size_t column_index, const std::vector<int> &column,
                       const std::vector<bool> &targets);
+  std::vector<std::pair<int64_t, int64_t>>
+  CalculateCategoryCounts(const std::vector<int> &column,
+                          const std::vector<bool> &targets);
 
   // Each column has its own vector of WoE values. We assume that
-  // categories are always (represented as) integers.
+  // categories are always (represented as) integers. Because of this,
+  // a vector ca be used instead of a map, as the values can be used as
+  // keys.
   std::vector<std::vector<double>> woe_map_;
   int64_t total_pos_{};
   int64_t total_neg_{};
   WoEEncoderOptions options_;
+  bool fitted_ = false;
 };
 
 } // namespace fast_woe_encoder
