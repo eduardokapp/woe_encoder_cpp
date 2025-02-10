@@ -8,9 +8,23 @@ For now the implementation is very simple:
   on the selected columns (or all if none are selected)
 * The transformed, ordinal-encoded columns are passed as a column-major vector of vector int to the C++ class.
 
+# Usage
+Should be very similar to [category_encoders.WoEEncoder](https://contrib.scikit-learn.org/category_encoders/woe.html).
+
+For now:
+
+```python
+from woe_encoder_cpp import WoEEncoder
+
+# data = Your data here..
+
+enc = WoEEncoder()
+data = enc.fit_transform()
+```
+
 ## TODO: Features to be added
 ### Behavioral
-- [*] Basic implementation that calculates WoE values correctly and is able
+- [x] Basic implementation that calculates WoE values correctly and is able
 to fit/transform/fit_transform the data.
 - [ ] Make the Python wrapper class equivalent (as possible) with category_encoders.WoEEncoder
 - [ ] Make the wrapper class inherit from scikit transformer
