@@ -3,14 +3,14 @@ requires = ["scikit-build-core>=0.10", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "fast_woe_encoder"
+name = "woe_encoder_cpp"
 version = "0.1.0"
-description = "Fast Weight of Evidence Encoder"
+description = "C++ implementation of Weight of Evidence Encoder"
 readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"} # UPDATE THESE
+    {name = "Eduardo Kapp", email = "eduardobkapp@gmail.com"}
 ]
 dependencies = [
     "numpy",

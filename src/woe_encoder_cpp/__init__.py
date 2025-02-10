@@ -1,5 +1,5 @@
-# fast_woe_encoder/__init__.py
-"""fast_woe_encoder package initializer."""
+# woe_encoder_cpp/__init__.py
+"""woe_encoder_cpp package initializer."""
 __version__ = "0.1.1"  # Updated version
 
 import numpy as np
