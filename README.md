@@ -30,7 +30,7 @@ to fit/transform/fit_transform the data.
 - [ ] Make the wrapper class inherit from scikit transformer
 
 ### Infra, CI/CD
-- [*] Build system that does not make the user need to know anything about C++ or CMake, just `pip install` and that's it.
+- [x] Build system that does not make the user need to know anything about C++ or CMake, just `pip install` and that's it.
 - [ ] Basic unit testing
 - [ ] CI pipeline that runs unit tests and also applies linting
 - [ ] Push lib to pypi? CD pipeline
